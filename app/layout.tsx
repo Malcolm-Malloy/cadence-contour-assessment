@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { SiteNav } from "@/components/site-nav";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -9,8 +10,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Mini LMS",
+  description: "Student consultation booking and admin oversight",
 };
 
 const geistSans = Geist({
@@ -33,7 +34,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <main className="min-h-screen flex flex-col items-center">
+            <div className="flex-1 w-full flex flex-col gap-8 items-center">
+              <SiteNav />
+              <div className="flex-1 flex flex-col w-full max-w-5xl p-5">
+                {children}
+              </div>
+            </div>
+          </main>
         </ThemeProvider>
       </body>
     </html>
