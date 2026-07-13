@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { toDatetimeLocalValue } from "@/lib/datetime";
+import { toDatetimeLocalValue, formatDateTime } from "@/lib/datetime";
 import type { Consultation } from "@/lib/types";
 
 const statusVariant: Record<Consultation["status"], "default" | "secondary" | "destructive"> = {
@@ -69,9 +69,7 @@ export function ConsultationList({ consultations }: { consultations: Consultatio
               <Badge variant={statusVariant[c.status]}>{c.status}</Badge>
             </div>
 
-            <p className="text-sm">
-              {new Date(c.scheduled_at).toLocaleString()}
-            </p>
+            <p className="text-sm">{formatDateTime(c.scheduled_at)}</p>
 
             {isReschedulingThis ? (
               <div className="flex items-center gap-2 flex-wrap">
