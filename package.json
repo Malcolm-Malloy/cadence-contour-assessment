@@ -6,7 +6,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "promote-admin": "node scripts/promote-admin.mjs"
+    "promote-admin": "node scripts/promote-admin.mjs",
+    "seed-dummy-data": "node scripts/seed-dummy-data.mjs"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.1",
