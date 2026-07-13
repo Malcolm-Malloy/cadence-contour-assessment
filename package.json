@@ -1,5 +1,5 @@
 {
-  "name": "mini-lms",
+  "name": "cadence",
   "private": true,
   "scripts": {
     "dev": "next dev",

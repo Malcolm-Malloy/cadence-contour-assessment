@@ -20,7 +20,7 @@ async function HomeContent() {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-6 text-center py-24">
-      <h1 className="text-3xl font-bold">Mini LMS</h1>
+      <h1 className="text-3xl font-bold">Cadence</h1>
       <p className="text-muted-foreground max-w-md">
         Book, reschedule, and manage your consultations in one place.
       </p>

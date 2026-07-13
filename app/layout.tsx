@@ -12,7 +12,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Mini LMS",
+  title: "Cadence",
   description: "Student consultation booking and admin oversight",
 };
 
@@ -60,7 +60,7 @@ function NavFallback() {
     <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
       <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
         <Link href="/" className="font-semibold">
-          Mini LMS
+          Cadence
         </Link>
       </div>
     </nav>
