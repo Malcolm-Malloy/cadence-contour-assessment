@@ -31,10 +31,18 @@ export async function GET() {
 // Creates a new consultation owned by the authenticated student. student_id
 // is always derived from the server-side session, never from the request
 // body, so a caller cannot create a booking under someone else's account.
+//
+// Admins are an oversight-only role and are rejected here regardless of
+// what the UI shows or hides — this is the actual enforcement boundary,
+// not the page-level redirect in app/dashboard/book/page.tsx.
 export async function POST(request: Request) {
   const auth = await getCurrentUser();
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (auth.profile.role !== "student") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { supabase, userId } = auth;

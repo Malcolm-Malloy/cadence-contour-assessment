@@ -39,9 +39,11 @@ async function DashboardContent() {
               <Link href="/admin">Admin view</Link>
             </Button>
           )}
-          <Button asChild>
-            <Link href="/dashboard/book">Book a consultation</Link>
-          </Button>
+          {profile.role === "student" && (
+            <Button asChild>
+              <Link href="/dashboard/book">Book a consultation</Link>
+            </Button>
+          )}
         </div>
       </div>
 
