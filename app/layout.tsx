@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { Suspense } from "react";
+import Link from "next/link";
 import { SiteNav } from "@/components/site-nav";
 import "./globals.css";
 
@@ -36,7 +38,9 @@ export default function RootLayout({
         >
           <main className="min-h-screen flex flex-col items-center">
             <div className="flex-1 w-full flex flex-col gap-8 items-center">
-              <SiteNav />
+              <Suspense fallback={<NavFallback />}>
+                <SiteNav />
+              </Suspense>
               <div className="flex-1 flex flex-col w-full max-w-5xl p-5">
                 {children}
               </div>
@@ -45,5 +49,20 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
+  );
+}
+
+// Renders instantly (no cookies/auth check), so the root layout isn't
+// blocked while SiteNav resolves who's logged in. Same nav shell/height as
+// SiteNav to avoid layout shift once it swaps in.
+function NavFallback() {
+  return (
+    <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
+      <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
+        <Link href="/" className="font-semibold">
+          Mini LMS
+        </Link>
+      </div>
+    </nav>
   );
 }
