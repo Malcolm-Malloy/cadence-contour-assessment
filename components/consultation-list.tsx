@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { toDatetimeLocalValue, formatDateTime } from "@/lib/datetime";
+import { DateTimePicker } from "@/components/datetime-picker";
+import { formatDateTime } from "@/lib/datetime";
 import type { Consultation } from "@/lib/types";
 
 const statusVariant: Record<Consultation["status"], "default" | "secondary" | "destructive"> = {
@@ -18,7 +18,7 @@ export function ConsultationList({ consultations }: { consultations: Consultatio
   const router = useRouter();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [reschedulingId, setReschedulingId] = useState<string | null>(null);
-  const [rescheduleValue, setRescheduleValue] = useState("");
+  const [rescheduleValue, setRescheduleValue] = useState<Date | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
   async function patch(id: string, body: Record<string, unknown>) {
@@ -73,19 +73,19 @@ export function ConsultationList({ consultations }: { consultations: Consultatio
 
             {isReschedulingThis ? (
               <div className="flex items-center gap-2 flex-wrap">
-                <Input
-                  type="datetime-local"
+                <DateTimePicker
                   value={rescheduleValue}
-                  onChange={(e) => setRescheduleValue(e.target.value)}
-                  min={toDatetimeLocalValue(new Date())}
+                  onChange={setRescheduleValue}
+                  minDate={new Date()}
                   className="max-w-xs"
                 />
                 <Button
                   size="sm"
                   disabled={pendingId === c.id || !rescheduleValue}
                   onClick={async () => {
+                    if (!rescheduleValue) return;
                     await patch(c.id, {
-                      scheduled_at: new Date(rescheduleValue).toISOString(),
+                      scheduled_at: rescheduleValue.toISOString(),
                     });
                     setReschedulingId(null);
                   }}
@@ -108,7 +108,7 @@ export function ConsultationList({ consultations }: { consultations: Consultatio
                     variant="outline"
                     disabled={pendingId === c.id}
                     onClick={() => {
-                      setRescheduleValue(toDatetimeLocalValue(c.scheduled_at));
+                      setRescheduleValue(new Date(c.scheduled_at));
                       setReschedulingId(c.id);
                     }}
                   >

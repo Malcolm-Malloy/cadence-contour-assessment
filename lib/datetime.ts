@@ -1,11 +1,3 @@
-export function toDatetimeLocalValue(input: string | Date) {
-  const d = typeof input === "string" ? new Date(input) : input;
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours(),
-  )}:${pad(d.getMinutes())}`;
-}
-
 // toLocaleString() with no explicit locale/timeZone uses the runtime's
 // defaults, which can differ between the Node.js SSR process (often UTC
 // on hosting platforms) and the browser (the viewer's local timezone),
