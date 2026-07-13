@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { Suspense } from "react";
 import Link from "next/link";
 import { SiteNav } from "@/components/site-nav";
+import { NavGate } from "@/components/nav-gate";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -38,9 +39,11 @@ export default function RootLayout({
         >
           <main className="min-h-screen flex flex-col items-center">
             <div className="flex-1 w-full flex flex-col gap-8 items-center">
-              <Suspense fallback={<NavFallback />}>
-                <SiteNav />
-              </Suspense>
+              <NavGate>
+                <Suspense fallback={<NavFallback />}>
+                  <SiteNav />
+                </Suspense>
+              </NavGate>
               <div className="flex-1 flex flex-col w-full max-w-5xl p-5">
                 {children}
               </div>
