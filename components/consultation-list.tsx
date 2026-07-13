@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { toDatetimeLocalValue } from "@/lib/datetime";
 import type { Consultation } from "@/lib/types";
 
 const statusVariant: Record<Consultation["status"], "default" | "secondary" | "destructive"> = {
@@ -12,14 +13,6 @@ const statusVariant: Record<Consultation["status"], "default" | "secondary" | "d
   completed: "secondary",
   cancelled: "destructive",
 };
-
-function toDatetimeLocalValue(iso: string) {
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours(),
-  )}:${pad(d.getMinutes())}`;
-}
 
 export function ConsultationList({ consultations }: { consultations: Consultation[] }) {
   const router = useRouter();
@@ -86,6 +79,7 @@ export function ConsultationList({ consultations }: { consultations: Consultatio
                   type="datetime-local"
                   value={rescheduleValue}
                   onChange={(e) => setRescheduleValue(e.target.value)}
+                  min={toDatetimeLocalValue(new Date())}
                   className="max-w-xs"
                 />
                 <Button

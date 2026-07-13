@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toDatetimeLocalValue } from "@/lib/datetime";
 
 export function BookConsultationForm() {
   const router = useRouter();
@@ -84,6 +85,7 @@ export function BookConsultationForm() {
             type="datetime-local"
             value={scheduledAt}
             onChange={(e) => setScheduledAt(e.target.value)}
+            min={toDatetimeLocalValue(new Date())}
             required
           />
         </div>
