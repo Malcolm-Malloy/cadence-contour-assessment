@@ -11,7 +11,9 @@ import { getCurrentUser } from "@/lib/supabase/current-user";
 // directly (bypassing a UI that merely hides the admin nav link) and read
 // every other student's data. RLS's `consultations_select_admin` policy is
 // a second, independent enforcement of the same rule at the database layer.
-export async function GET() {
+const PAGE_SIZE = 20;
+
+export async function GET(request: Request) {
   const auth = await getCurrentUser();
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -23,14 +25,26 @@ export async function GET() {
 
   const { supabase } = auth;
 
-  const { data, error } = await supabase
+  const { searchParams } = new URL(request.url);
+  const page = Math.max(1, Number(searchParams.get("page")) || 1);
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  const { data, error, count } = await supabase
     .from("consultations")
-    .select("*")
-    .order("scheduled_at", { ascending: true });
+    .select("*", { count: "exact" })
+    .order("scheduled_at", { ascending: true })
+    .range(from, to);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ consultations: data });
+  return NextResponse.json({
+    consultations: data,
+    page,
+    pageSize: PAGE_SIZE,
+    total: count ?? 0,
+    totalPages: count ? Math.ceil(count / PAGE_SIZE) : 1,
+  });
 }
