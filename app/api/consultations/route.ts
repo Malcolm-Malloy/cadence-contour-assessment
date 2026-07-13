@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/supabase/current-user";
 
-// GET /api/consultations
-// Lists the authenticated student's own consultations. RLS on the
-// `consultations` table already restricts rows to `student_id = auth.uid()`,
-// but we also filter explicitly here so the intent is clear from the code
-// alone, not just the database policy (defense-in-depth, see README).
 export async function GET() {
   const auth = await getCurrentUser();
   if (!auth) {
@@ -27,14 +22,6 @@ export async function GET() {
   return NextResponse.json({ consultations: data });
 }
 
-// POST /api/consultations
-// Creates a new consultation owned by the authenticated student. student_id
-// is always derived from the server-side session, never from the request
-// body, so a caller cannot create a booking under someone else's account.
-//
-// Admins are an oversight-only role and are rejected here regardless of
-// what the UI shows or hides — this is the actual enforcement boundary,
-// not the page-level redirect in app/dashboard/book/page.tsx.
 export async function POST(request: Request) {
   const auth = await getCurrentUser();
   if (!auth) {

@@ -55,9 +55,6 @@ export default function RootLayout({
   );
 }
 
-// Renders instantly (no cookies/auth check), so the root layout isn't
-// blocked while SiteNav resolves who's logged in. Same nav shell/height as
-// SiteNav to avoid layout shift once it swaps in.
 function NavFallback() {
   return (
     <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">

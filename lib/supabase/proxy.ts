@@ -55,10 +55,6 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/api")
   ) {
     // no user, potentially respond by redirecting the user to the login page.
-    // API routes are excluded here deliberately: they must return a JSON 401
-    // (handled in each route via getCurrentUser()), not an HTML redirect —
-    // otherwise a client-side fetch() expecting JSON gets a login page body
-    // back instead and fails confusingly.
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);

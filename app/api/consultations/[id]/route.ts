@@ -4,15 +4,6 @@ import type { ConsultationStatus } from "@/lib/types";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// PATCH /api/consultations/:id
-// Handles reschedule (scheduled_at) and status changes (complete/cancel) for
-// a single consultation. Ownership is enforced by filtering on student_id in
-// the query itself, on top of the RLS policy, so a student can never
-// mutate another student's booking by guessing an id (IDOR protection).
-//
-// A row that isn't found OR doesn't belong to the caller returns the same
-// 404, deliberately, so the response doesn't confirm whether a given id
-// exists at all for someone else's account.
 export async function PATCH(request: Request, { params }: RouteParams) {
   const auth = await getCurrentUser();
   if (!auth) {
@@ -31,8 +22,6 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
   const { scheduled_at, status } = (body ?? {}) as Record<string, unknown>;
 
-  // Load the existing row first (scoped to this student) so we can validate
-  // the requested transition against its current state.
   const { data: existing, error: fetchError } = await supabase
     .from("consultations")
     .select("*")
@@ -86,16 +75,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         );
       }
       if (new Date(existing.scheduled_at).getTime() > Date.now()) {
-        // Assumption 5: a consultation can only be marked complete once its
-        // scheduled time has passed.
         return NextResponse.json(
           { error: "Cannot mark a future consultation as completed" },
           { status: 409 },
         );
       }
     } else if (status === "booked") {
-      // "Mark incomplete": only valid as a revert from completed, not a way
-      // to un-cancel — cancelling stays a one-way action.
       if (existing.status !== "completed") {
         return NextResponse.json(
           { error: `Cannot mark incomplete from status ${existing.status}` },

@@ -14,11 +14,6 @@ export default function DashboardPage() {
   );
 }
 
-// Admins are an oversight-only role (see README "Assumptions &
-// Justifications", #2a) and are redirected to /admin rather than shown
-// their own (always-empty) consultations dashboard. This is a page-level
-// convenience redirect, not a security boundary — /api/consultations
-// scopes every query to the caller's own session regardless.
 async function DashboardContent() {
   const auth = await getCurrentUser();
   if (!auth) {

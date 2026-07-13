@@ -42,14 +42,6 @@ export default function AdminPage({
   );
 }
 
-// Admin-only, read-only list of every consultation in the system.
-//
-// The role check below is a page-level convenience redirect for UX — a
-// non-admin who somehow lands here is bounced back to their dashboard. It is
-// NOT the security boundary. The actual enforcement is server-side in
-// /api/admin/consultations and in the `consultations_select_admin` RLS
-// policy, both of which re-derive the caller's role from their session
-// independently of this page. See README "Assumptions & Justifications", #2.
 async function AdminContent({
   searchParams,
 }: {
@@ -78,10 +70,6 @@ async function AdminContent({
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
-  // Distinct student list for the filter dropdown. A lightweight 3-column
-  // query across the whole table (not the paginated main query) — cheap
-  // relative to the full-row fetch it supports, but would move to a
-  // dedicated view/RPC if the table grew into the millions of rows.
   const { data: studentRows } = await supabase
     .from("consultations")
     .select("student_id, first_name, last_name, created_at")
@@ -106,8 +94,6 @@ async function AdminContent({
   }
   query = query
     .order("scheduled_at", { ascending })
-    // Tie-breaker so row order (and thus pagination) stays deterministic
-    // across requests when scheduled_at has duplicate values.
     .order("id", { ascending: true });
 
   const { data: consultations, error, count } = await query

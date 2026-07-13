@@ -1,15 +1,3 @@
-// Dev/assessment-only helper: promotes an already-signed-up user to the
-// 'admin' role so the Admin view (/admin) can actually be exercised.
-//
-// This is intentionally NOT part of the app itself and is never reachable
-// from a route or API endpoint — it's a one-off script run from the
-// terminal, using the service role key (which bypasses RLS), precisely so
-// that key never has to touch application code or the browser.
-//
-// Usage:
-//   SUPABASE_SERVICE_ROLE_KEY=... NEXT_PUBLIC_SUPABASE_URL=... \
-//     node scripts/promote-admin.mjs someone@example.com
-
 import { createClient } from "@supabase/supabase-js";
 
 const email = process.argv[2];

@@ -11,10 +11,6 @@ export default function BookConsultationPage() {
   );
 }
 
-// Admins are an oversight-only role and don't book consultations for
-// themselves; this page-level redirect is a UX convenience. The real
-// enforcement is in POST /api/consultations, which rejects non-student
-// callers regardless of what this page renders.
 async function BookConsultationGate() {
   const auth = await getCurrentUser();
   if (!auth) {

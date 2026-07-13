@@ -1,12 +1,3 @@
-// Dev/assessment-only helper: seeds 30 dummy student accounts, each with a
-// handful of consultations in varied statuses, so the admin view has
-// realistic-looking data to review. Not part of the app itself, never
-// reachable from a route or API endpoint.
-//
-// Usage:
-//   NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... \
-//     node scripts/seed-dummy-data.mjs
-
 import { createClient } from "@supabase/supabase-js";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -97,12 +88,9 @@ const statuses = ["booked", "booked", "completed", "cancelled"];
 let consultationCount = 0;
 
 for (const studentId of createdStudentIds) {
-  // One name per student, reused across all of their bookings — a real
-  // student always books under their own name, not a different random
-  // name each time.
   const firstName = pick(firstNames);
   const lastName = pick(lastNames);
-  const numConsultations = 1 + Math.floor(Math.random() * 3); // 1-3 each
+  const numConsultations = 1 + Math.floor(Math.random() * 3);
 
   for (let i = 0; i < numConsultations; i++) {
     const status = pick(statuses);

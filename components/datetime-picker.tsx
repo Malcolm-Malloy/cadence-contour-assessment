@@ -42,10 +42,6 @@ export function DateTimePicker({
     onChange(next);
   }
 
-  // The calendar only disables whole days before minDate, so a same-day
-  // selection could still pair with an already-passed time. Constrain the
-  // time input's own min to "now" specifically when the selected day is
-  // today, so the picker can't produce a past datetime either way.
   const timeMin = minDate && value && isSameDay(value, minDate) ? format(minDate, "HH:mm") : undefined;
 
   return (

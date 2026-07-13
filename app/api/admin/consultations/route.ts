@@ -1,16 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/supabase/current-user";
 
-// GET /api/admin/consultations
-// Read-only, admin-only list of every consultation in the system.
-//
-// The role check happens here, in the handler, using the profile resolved
-// from the server-side session — not from any client-supplied header,
-// query param, or body field. This is the exact check that must not be
-// skipped: without it, any authenticated student could call this endpoint
-// directly (bypassing a UI that merely hides the admin nav link) and read
-// every other student's data. RLS's `consultations_select_admin` policy is
-// a second, independent enforcement of the same rule at the database layer.
 const PAGE_SIZE = 20;
 
 const STATUS_VALUES = ["booked", "completed", "cancelled"] as const;
@@ -50,8 +40,6 @@ export async function GET(request: Request) {
   }
   query = query
     .order("scheduled_at", { ascending })
-    // Tie-breaker so row order (and thus pagination) stays deterministic
-    // across requests when scheduled_at has duplicate values.
     .order("id", { ascending: true });
 
   const { data, error, count } = await query.range(from, to);
