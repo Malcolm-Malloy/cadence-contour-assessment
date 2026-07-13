@@ -15,7 +15,7 @@ export default function Home() {
 async function HomeContent() {
   const auth = await getCurrentUser();
   if (auth) {
-    redirect("/dashboard");
+    redirect(auth.profile.role === "admin" ? "/admin" : "/dashboard");
   }
 
   return (

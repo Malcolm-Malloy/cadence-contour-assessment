@@ -21,7 +21,7 @@ async function BookConsultationGate() {
     redirect("/auth/login");
   }
   if (auth.profile.role !== "student") {
-    redirect("/dashboard");
+    redirect("/admin");
   }
 
   return <BookConsultationForm />;

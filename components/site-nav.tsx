@@ -15,8 +15,12 @@ export async function SiteNav() {
           <Link href="/">Cadence</Link>
           {auth && (
             <div className="flex gap-4 font-normal">
-              <Link href="/dashboard">Dashboard</Link>
-              {auth.profile.role === "student" && <Link href="/dashboard/book">Book</Link>}
+              {auth.profile.role === "student" && (
+                <>
+                  <Link href="/dashboard">Dashboard</Link>
+                  <Link href="/dashboard/book">Book</Link>
+                </>
+              )}
               {auth.profile.role === "admin" && <Link href="/admin">Admin</Link>}
             </div>
           )}

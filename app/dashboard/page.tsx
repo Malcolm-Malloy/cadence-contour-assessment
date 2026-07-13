@@ -14,13 +14,21 @@ export default function DashboardPage() {
   );
 }
 
+// Admins are an oversight-only role (see README "Assumptions &
+// Justifications", #2a) and are redirected to /admin rather than shown
+// their own (always-empty) consultations dashboard. This is a page-level
+// convenience redirect, not a security boundary — /api/consultations
+// scopes every query to the caller's own session regardless.
 async function DashboardContent() {
   const auth = await getCurrentUser();
   if (!auth) {
     redirect("/auth/login");
   }
+  if (auth.profile.role === "admin") {
+    redirect("/admin");
+  }
 
-  const { supabase, userId, profile } = auth;
+  const { supabase, userId } = auth;
 
   const { data: consultations, error } = await supabase
     .from("consultations")
@@ -33,18 +41,9 @@ async function DashboardContent() {
     <div className="flex-1 w-full flex flex-col gap-8">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="font-bold text-2xl">My Consultations</h1>
-        <div className="flex items-center gap-2">
-          {profile.role === "admin" && (
-            <Button variant="outline" asChild>
-              <Link href="/admin">Admin view</Link>
-            </Button>
-          )}
-          {profile.role === "student" && (
-            <Button asChild>
-              <Link href="/dashboard/book">Book a consultation</Link>
-            </Button>
-          )}
-        </div>
+        <Button asChild>
+          <Link href="/dashboard/book">Book a consultation</Link>
+        </Button>
       </div>
 
       {error ? (
