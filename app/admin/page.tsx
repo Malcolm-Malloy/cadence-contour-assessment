@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/supabase/current-user";
+import { AdminFilters, type StudentOption } from "@/components/admin-filters";
 import type { Consultation } from "@/lib/types";
 
 const statusVariant: Record<Consultation["status"], "default" | "secondary" | "destructive"> = {
@@ -13,16 +14,20 @@ const statusVariant: Record<Consultation["status"], "default" | "secondary" | "d
   cancelled: "destructive",
 };
 
-const PAGE_SIZE = 20;
+const STATUS_VALUES: Consultation["status"][] = ["booked", "completed", "cancelled"];
 
-const SORT_KEYS = ["scheduled_at", "student", "status"] as const;
-type SortKey = (typeof SORT_KEYS)[number];
-
-function isSortKey(value: string | undefined): value is SortKey {
-  return !!value && (SORT_KEYS as readonly string[]).includes(value);
+function isStatus(value: string | undefined): value is Consultation["status"] {
+  return !!value && (STATUS_VALUES as string[]).includes(value);
 }
 
-type AdminSearchParams = { page?: string; sort?: string; dir?: string };
+const PAGE_SIZE = 20;
+
+type AdminSearchParams = {
+  page?: string;
+  dir?: string;
+  student?: string;
+  status?: string;
+};
 
 export default function AdminPage({
   searchParams,
@@ -59,24 +64,50 @@ async function AdminContent({
 
   const { supabase } = auth;
 
-  const { page: pageParam, sort: sortParam, dir: dirParam } = await searchParams;
+  const {
+    page: pageParam,
+    dir: dirParam,
+    student: studentParam,
+    status: statusParam,
+  } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
-  const sort: SortKey = isSortKey(sortParam) ? sortParam : "scheduled_at";
   const ascending = dirParam !== "desc";
+  const studentFilter = studentParam || undefined;
+  const statusFilter = isStatus(statusParam) ? statusParam : undefined;
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
-  let query = supabase.from("consultations").select("*", { count: "exact" });
-  if (sort === "student") {
-    query = query.order("last_name", { ascending }).order("first_name", { ascending });
-  } else if (sort === "status") {
-    query = query.order("status", { ascending });
-  } else {
-    query = query.order("scheduled_at", { ascending });
+  // Distinct student list for the filter dropdown. A lightweight 3-column
+  // query across the whole table (not the paginated main query) — cheap
+  // relative to the full-row fetch it supports, but would move to a
+  // dedicated view/RPC if the table grew into the millions of rows.
+  const { data: studentRows } = await supabase
+    .from("consultations")
+    .select("student_id, first_name, last_name, created_at")
+    .order("created_at", { ascending: false })
+    .returns<Pick<Consultation, "student_id" | "first_name" | "last_name" | "created_at">[]>();
+
+  const seen = new Set<string>();
+  const students: StudentOption[] = [];
+  for (const row of studentRows ?? []) {
+    if (seen.has(row.student_id)) continue;
+    seen.add(row.student_id);
+    students.push({ id: row.student_id, name: `${row.first_name} ${row.last_name}` });
   }
-  // Tie-breaker so row order (and thus pagination) stays deterministic
-  // across requests when the primary sort key has duplicate values.
-  query = query.order("id", { ascending: true });
+  students.sort((a, b) => a.name.localeCompare(b.name));
+
+  let query = supabase.from("consultations").select("*", { count: "exact" });
+  if (studentFilter) {
+    query = query.eq("student_id", studentFilter);
+  }
+  if (statusFilter) {
+    query = query.eq("status", statusFilter);
+  }
+  query = query
+    .order("scheduled_at", { ascending })
+    // Tie-breaker so row order (and thus pagination) stays deterministic
+    // across requests when scheduled_at has duplicate values.
+    .order("id", { ascending: true });
 
   const { data: consultations, error, count } = await query
     .range(from, to)
@@ -85,17 +116,21 @@ async function AdminContent({
   const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
 
   function pageHref(targetPage: number) {
-    return `/admin?page=${targetPage}&sort=${sort}&dir=${ascending ? "asc" : "desc"}`;
+    const params = new URLSearchParams();
+    params.set("page", String(targetPage));
+    params.set("dir", ascending ? "asc" : "desc");
+    if (studentFilter) params.set("student", studentFilter);
+    if (statusFilter) params.set("status", statusFilter);
+    return `/admin?${params.toString()}`;
   }
 
-  function sortHref(key: SortKey) {
-    const nextDir = sort === key && ascending ? "desc" : "asc";
-    return `/admin?page=1&sort=${key}&dir=${nextDir}`;
-  }
-
-  function sortIndicator(key: SortKey) {
-    if (sort !== key) return null;
-    return ascending ? " ↑" : " ↓";
+  function dateSortHref() {
+    const params = new URLSearchParams();
+    params.set("page", "1");
+    params.set("dir", ascending ? "desc" : "asc");
+    if (studentFilter) params.set("student", studentFilter);
+    if (statusFilter) params.set("status", statusFilter);
+    return `/admin?${params.toString()}`;
   }
 
   return (
@@ -106,16 +141,10 @@ async function AdminContent({
         {count !== null && count > 0 && ` ${count} total.`}
       </p>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm text-muted-foreground">Sort by:</span>
-        <Button variant={sort === "scheduled_at" ? "default" : "outline"} size="sm" asChild>
-          <Link href={sortHref("scheduled_at")}>Date{sortIndicator("scheduled_at")}</Link>
-        </Button>
-        <Button variant={sort === "student" ? "default" : "outline"} size="sm" asChild>
-          <Link href={sortHref("student")}>Student{sortIndicator("student")}</Link>
-        </Button>
-        <Button variant={sort === "status" ? "default" : "outline"} size="sm" asChild>
-          <Link href={sortHref("status")}>Status{sortIndicator("status")}</Link>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <AdminFilters students={students} />
+        <Button variant="outline" size="sm" asChild>
+          <Link href={dateSortHref()}>Date {ascending ? "↑" : "↓"}</Link>
         </Button>
       </div>
 
@@ -171,7 +200,11 @@ async function AdminContent({
           )}
         </>
       ) : (
-        <p className="text-sm text-muted-foreground">No consultations in the system yet.</p>
+        <p className="text-sm text-muted-foreground">
+          {studentFilter || statusFilter
+            ? "No consultations match the selected filters."
+            : "No consultations in the system yet."}
+        </p>
       )}
     </div>
   );

@@ -13,11 +13,11 @@ import { getCurrentUser } from "@/lib/supabase/current-user";
 // a second, independent enforcement of the same rule at the database layer.
 const PAGE_SIZE = 20;
 
-const SORT_KEYS = ["scheduled_at", "student", "status"] as const;
-type SortKey = (typeof SORT_KEYS)[number];
+const STATUS_VALUES = ["booked", "completed", "cancelled"] as const;
+type StatusValue = (typeof STATUS_VALUES)[number];
 
-function isSortKey(value: string | null): value is SortKey {
-  return !!value && (SORT_KEYS as readonly string[]).includes(value);
+function isStatus(value: string | null): value is StatusValue {
+  return !!value && (STATUS_VALUES as readonly string[]).includes(value);
 }
 
 export async function GET(request: Request) {
@@ -34,23 +34,25 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
-  const sortParam = searchParams.get("sort");
-  const sort: SortKey = isSortKey(sortParam) ? sortParam : "scheduled_at";
   const ascending = searchParams.get("dir") !== "desc";
+  const studentFilter = searchParams.get("student") || undefined;
+  const statusParam = searchParams.get("status");
+  const statusFilter = isStatus(statusParam) ? statusParam : undefined;
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
   let query = supabase.from("consultations").select("*", { count: "exact" });
-  if (sort === "student") {
-    query = query.order("last_name", { ascending }).order("first_name", { ascending });
-  } else if (sort === "status") {
-    query = query.order("status", { ascending });
-  } else {
-    query = query.order("scheduled_at", { ascending });
+  if (studentFilter) {
+    query = query.eq("student_id", studentFilter);
   }
-  // Tie-breaker so row order (and thus pagination) stays deterministic
-  // across requests when the primary sort key has duplicate values.
-  query = query.order("id", { ascending: true });
+  if (statusFilter) {
+    query = query.eq("status", statusFilter);
+  }
+  query = query
+    .order("scheduled_at", { ascending })
+    // Tie-breaker so row order (and thus pagination) stays deterministic
+    // across requests when scheduled_at has duplicate values.
+    .order("id", { ascending: true });
 
   const { data, error, count } = await query.range(from, to);
 
@@ -64,7 +66,8 @@ export async function GET(request: Request) {
     pageSize: PAGE_SIZE,
     total: count ?? 0,
     totalPages: count ? Math.ceil(count / PAGE_SIZE) : 1,
-    sort,
     dir: ascending ? "asc" : "desc",
+    student: studentFilter ?? null,
+    status: statusFilter ?? null,
   });
 }
