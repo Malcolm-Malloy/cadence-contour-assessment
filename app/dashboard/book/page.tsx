@@ -29,7 +29,7 @@ async function BookConsultationGate() {
 
 function BookFallback() {
   return (
-    <div className="flex-1 w-full flex flex-col gap-8 max-w-md">
+    <div className="flex-1 w-full flex flex-col gap-8 max-w-md mx-auto">
       <h1 className="font-bold text-2xl">Book a Consultation</h1>
       <p className="text-sm text-muted-foreground">Loading...</p>
     </div>
