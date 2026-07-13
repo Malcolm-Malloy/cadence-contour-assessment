@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { getCurrentUser } from "@/lib/supabase/current-user";
 import type { Consultation } from "@/lib/types";
@@ -9,6 +10,14 @@ const statusVariant: Record<Consultation["status"], "default" | "secondary" | "d
   cancelled: "destructive",
 };
 
+export default function AdminPage() {
+  return (
+    <Suspense fallback={<AdminFallback />}>
+      <AdminContent />
+    </Suspense>
+  );
+}
+
 // Admin-only, read-only list of every consultation in the system.
 //
 // The role check below is a page-level convenience redirect for UX — a
@@ -17,7 +26,7 @@ const statusVariant: Record<Consultation["status"], "default" | "secondary" | "d
 // /api/admin/consultations and in the `consultations_select_admin` RLS
 // policy, both of which re-derive the caller's role from their session
 // independently of this page. See README "Assumptions & Justifications", #2.
-export default async function AdminPage() {
+async function AdminContent() {
   const auth = await getCurrentUser();
   if (!auth) {
     redirect("/auth/login");
@@ -61,6 +70,15 @@ export default async function AdminPage() {
       ) : (
         <p className="text-sm text-muted-foreground">No consultations in the system yet.</p>
       )}
+    </div>
+  );
+}
+
+function AdminFallback() {
+  return (
+    <div className="flex-1 w-full flex flex-col gap-8">
+      <h1 className="font-bold text-2xl">All Consultations (Admin)</h1>
+      <p className="text-sm text-muted-foreground">Loading...</p>
     </div>
   );
 }

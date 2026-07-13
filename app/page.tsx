@@ -1,9 +1,18 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/supabase/current-user";
 
-export default async function Home() {
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+async function HomeContent() {
   const auth = await getCurrentUser();
   if (auth) {
     redirect("/dashboard");

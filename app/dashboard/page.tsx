@@ -1,11 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { ConsultationList } from "@/components/consultation-list";
 import { getCurrentUser } from "@/lib/supabase/current-user";
 import type { Consultation } from "@/lib/types";
 
-export default async function DashboardPage() {
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<DashboardFallback />}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+async function DashboardContent() {
   const auth = await getCurrentUser();
   if (!auth) {
     redirect("/auth/login");
@@ -41,6 +50,15 @@ export default async function DashboardPage() {
       ) : (
         <ConsultationList consultations={consultations ?? []} />
       )}
+    </div>
+  );
+}
+
+function DashboardFallback() {
+  return (
+    <div className="flex-1 w-full flex flex-col gap-8">
+      <h1 className="font-bold text-2xl">My Consultations</h1>
+      <p className="text-sm text-muted-foreground">Loading...</p>
     </div>
   );
 }
