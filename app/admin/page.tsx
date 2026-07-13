@@ -15,10 +15,19 @@ const statusVariant: Record<Consultation["status"], "default" | "secondary" | "d
 
 const PAGE_SIZE = 20;
 
+const SORT_KEYS = ["scheduled_at", "student", "status"] as const;
+type SortKey = (typeof SORT_KEYS)[number];
+
+function isSortKey(value: string | undefined): value is SortKey {
+  return !!value && (SORT_KEYS as readonly string[]).includes(value);
+}
+
+type AdminSearchParams = { page?: string; sort?: string; dir?: string };
+
 export default function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<AdminSearchParams>;
 }) {
   return (
     <Suspense fallback={<AdminFallback />}>
@@ -38,7 +47,7 @@ export default function AdminPage({
 async function AdminContent({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<AdminSearchParams>;
 }) {
   const auth = await getCurrentUser();
   if (!auth) {
@@ -50,19 +59,44 @@ async function AdminContent({
 
   const { supabase } = auth;
 
-  const { page: pageParam } = await searchParams;
+  const { page: pageParam, sort: sortParam, dir: dirParam } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
+  const sort: SortKey = isSortKey(sortParam) ? sortParam : "scheduled_at";
+  const ascending = dirParam !== "desc";
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
-  const { data: consultations, error, count } = await supabase
-    .from("consultations")
-    .select("*", { count: "exact" })
-    .order("scheduled_at", { ascending: true })
+  let query = supabase.from("consultations").select("*", { count: "exact" });
+  if (sort === "student") {
+    query = query.order("last_name", { ascending }).order("first_name", { ascending });
+  } else if (sort === "status") {
+    query = query.order("status", { ascending });
+  } else {
+    query = query.order("scheduled_at", { ascending });
+  }
+  // Tie-breaker so row order (and thus pagination) stays deterministic
+  // across requests when the primary sort key has duplicate values.
+  query = query.order("id", { ascending: true });
+
+  const { data: consultations, error, count } = await query
     .range(from, to)
     .returns<Consultation[]>();
 
   const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
+
+  function pageHref(targetPage: number) {
+    return `/admin?page=${targetPage}&sort=${sort}&dir=${ascending ? "asc" : "desc"}`;
+  }
+
+  function sortHref(key: SortKey) {
+    const nextDir = sort === key && ascending ? "desc" : "asc";
+    return `/admin?page=1&sort=${key}&dir=${nextDir}`;
+  }
+
+  function sortIndicator(key: SortKey) {
+    if (sort !== key) return null;
+    return ascending ? " ↑" : " ↓";
+  }
 
   return (
     <div className="flex-1 w-full flex flex-col gap-8">
@@ -71,6 +105,19 @@ async function AdminContent({
         Read-only view across every student. This page does not support editing.
         {count !== null && count > 0 && ` ${count} total.`}
       </p>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-sm text-muted-foreground">Sort by:</span>
+        <Button variant={sort === "scheduled_at" ? "default" : "outline"} size="sm" asChild>
+          <Link href={sortHref("scheduled_at")}>Date{sortIndicator("scheduled_at")}</Link>
+        </Button>
+        <Button variant={sort === "student" ? "default" : "outline"} size="sm" asChild>
+          <Link href={sortHref("student")}>Student{sortIndicator("student")}</Link>
+        </Button>
+        <Button variant={sort === "status" ? "default" : "outline"} size="sm" asChild>
+          <Link href={sortHref("status")}>Status{sortIndicator("status")}</Link>
+        </Button>
+      </div>
 
       {error ? (
         <p className="text-sm text-destructive">Could not load consultations: {error.message}</p>
@@ -102,7 +149,7 @@ async function AdminContent({
                 </span>
               ) : (
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`/admin?page=${page - 1}`}>Previous</Link>
+                  <Link href={pageHref(page - 1)}>Previous</Link>
                 </Button>
               )}
               <p className="text-sm text-muted-foreground">
@@ -117,7 +164,7 @@ async function AdminContent({
                 </span>
               ) : (
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`/admin?page=${page + 1}`}>Next</Link>
+                  <Link href={pageHref(page + 1)}>Next</Link>
                 </Button>
               )}
             </div>
