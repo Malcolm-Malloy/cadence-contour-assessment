@@ -88,12 +88,20 @@ for (let i = 1; i <= STUDENT_COUNT; i++) {
   createdStudentIds.push(userId);
 }
 
+console.log(`Clearing any existing consultations for these students (re-run safety)...`);
+await supabase.from("consultations").delete().in("student_id", createdStudentIds);
+
 console.log(`Seeding consultations...`);
 
 const statuses = ["booked", "booked", "completed", "cancelled"];
 let consultationCount = 0;
 
 for (const studentId of createdStudentIds) {
+  // One name per student, reused across all of their bookings — a real
+  // student always books under their own name, not a different random
+  // name each time.
+  const firstName = pick(firstNames);
+  const lastName = pick(lastNames);
   const numConsultations = 1 + Math.floor(Math.random() * 3); // 1-3 each
 
   for (let i = 0; i < numConsultations; i++) {
@@ -103,8 +111,8 @@ for (const studentId of createdStudentIds) {
 
     const { error } = await supabase.from("consultations").insert({
       student_id: studentId,
-      first_name: pick(firstNames),
-      last_name: pick(lastNames),
+      first_name: firstName,
+      last_name: lastName,
       reason: pick(reasons),
       scheduled_at,
       status,
