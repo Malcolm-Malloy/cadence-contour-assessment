@@ -118,7 +118,11 @@ export function ConsultationList({ consultations }: { consultations: Consultatio
                     size="sm"
                     variant="outline"
                     disabled={pendingId === c.id}
-                    onClick={() => patch(c.id, { status: "cancelled" })}
+                    onClick={() => {
+                      if (window.confirm("Cancel this consultation? This can't be undone.")) {
+                        patch(c.id, { status: "cancelled" });
+                      }
+                    }}
                   >
                     Cancel
                   </Button>
@@ -132,6 +136,18 @@ export function ConsultationList({ consultations }: { consultations: Consultatio
                   </Button>
                 </div>
               )
+            )}
+            {!isReschedulingThis && c.status === "completed" && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={pendingId === c.id}
+                  onClick={() => patch(c.id, { status: "booked" })}
+                >
+                  Mark incomplete
+                </Button>
+              </div>
             )}
           </div>
         );

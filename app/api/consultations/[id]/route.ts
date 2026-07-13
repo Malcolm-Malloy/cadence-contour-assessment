@@ -70,27 +70,47 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   }
 
   if (status !== undefined) {
-    const allowed: ConsultationStatus[] = ["completed", "cancelled"];
+    const allowed: ConsultationStatus[] = ["booked", "completed", "cancelled"];
     if (typeof status !== "string" || !allowed.includes(status as ConsultationStatus)) {
       return NextResponse.json(
-        { error: "status must be one of: completed, cancelled" },
+        { error: "status must be one of: booked, completed, cancelled" },
         { status: 400 },
       );
     }
-    if (existing.status !== "booked") {
-      return NextResponse.json(
-        { error: `Cannot change status of a consultation that is already ${existing.status}` },
-        { status: 409 },
-      );
+
+    if (status === "completed") {
+      if (existing.status !== "booked") {
+        return NextResponse.json(
+          { error: `Cannot mark complete from status ${existing.status}` },
+          { status: 409 },
+        );
+      }
+      if (new Date(existing.scheduled_at).getTime() > Date.now()) {
+        // Assumption 5: a consultation can only be marked complete once its
+        // scheduled time has passed.
+        return NextResponse.json(
+          { error: "Cannot mark a future consultation as completed" },
+          { status: 409 },
+        );
+      }
+    } else if (status === "booked") {
+      // "Mark incomplete": only valid as a revert from completed, not a way
+      // to un-cancel — cancelling stays a one-way action.
+      if (existing.status !== "completed") {
+        return NextResponse.json(
+          { error: `Cannot mark incomplete from status ${existing.status}` },
+          { status: 409 },
+        );
+      }
+    } else if (status === "cancelled") {
+      if (existing.status !== "booked") {
+        return NextResponse.json(
+          { error: `Cannot cancel from status ${existing.status}` },
+          { status: 409 },
+        );
+      }
     }
-    if (status === "completed" && new Date(existing.scheduled_at).getTime() > Date.now()) {
-      // Assumption 5: a consultation can only be marked complete once its
-      // scheduled time has passed.
-      return NextResponse.json(
-        { error: "Cannot mark a future consultation as completed" },
-        { status: 409 },
-      );
-    }
+
     updates.status = status;
   }
 
