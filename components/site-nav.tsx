@@ -13,15 +13,10 @@ export async function SiteNav() {
       <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
         <div className="flex gap-5 items-center font-semibold">
           <Link href="/">Cadence</Link>
-          {auth && (
+          {auth?.profile.role === "student" && (
             <div className="flex gap-4 font-normal">
-              {auth.profile.role === "student" && (
-                <>
-                  <Link href="/dashboard">Dashboard</Link>
-                  <Link href="/dashboard/book">Book</Link>
-                </>
-              )}
-              {auth.profile.role === "admin" && <Link href="/admin">Admin</Link>}
+              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/dashboard/book">Book</Link>
             </div>
           )}
         </div>
