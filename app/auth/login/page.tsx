@@ -5,7 +5,8 @@ export default function Page() {
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-sm flex flex-col gap-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Cadence Booking Systems</h1>
+          <h1 className="text-4xl font-bold">Cadence</h1>
+          <p className="text-lg font-medium">Booking Systems</p>
           <p className="text-sm text-muted-foreground">Keep every session on schedule.</p>
         </div>
         <LoginForm />
