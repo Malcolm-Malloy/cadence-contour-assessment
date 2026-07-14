@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,6 +98,7 @@ export function BookConsultationForm() {
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         <Button type="submit" disabled={submitting}>
+          {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
           {submitting ? "Booking..." : "Book consultation"}
         </Button>
       </form>

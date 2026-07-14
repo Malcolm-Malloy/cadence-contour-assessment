@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/supabase/current-user";
 import { AdminFilters, type StudentOption } from "@/components/admin-filters";
@@ -202,7 +203,25 @@ function AdminFallback() {
   return (
     <div className="flex-1 w-full flex flex-col gap-8">
       <h1 className="font-bold text-2xl">All Consultations (Admin)</h1>
-      <p className="text-sm text-muted-foreground">Loading...</p>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-8 w-32" />
+        </div>
+        <Skeleton className="h-8 w-24" />
+      </div>
+      <div className="flex flex-col gap-3">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="border rounded-lg p-4 flex items-center justify-between gap-2">
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-56" />
+              <Skeleton className="h-4 w-28" />
+            </div>
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
