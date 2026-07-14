@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DateTimePicker } from "@/components/datetime-picker";
-import { formatDateTime } from "@/lib/datetime";
+import { formatDate, formatTime } from "@/lib/datetime";
 import type { Consultation } from "@/lib/types";
 
 const statusVariant: Record<Consultation["status"], "default" | "secondary" | "destructive"> = {
@@ -64,7 +64,10 @@ export function ConsultationList({ consultations }: { consultations: Consultatio
               <Badge variant={statusVariant[c.status]}>{c.status}</Badge>
             </div>
 
-            <p className="text-sm">{formatDateTime(c.scheduled_at)}</p>
+            <div>
+              <p className="text-sm">{formatDate(c.scheduled_at)}</p>
+              <p className="text-sm text-muted-foreground">{formatTime(c.scheduled_at)}</p>
+            </div>
 
             {isReschedulingThis ? (
               <div className="flex items-center gap-2 flex-wrap">

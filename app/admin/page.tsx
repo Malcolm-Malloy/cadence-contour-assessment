@@ -6,7 +6,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/supabase/current-user";
 import { AdminFilters, type StudentOption } from "@/components/admin-filters";
-import { formatDateTime } from "@/lib/datetime";
+import { formatDate, formatTime } from "@/lib/datetime";
 import type { Consultation } from "@/lib/types";
 
 const statusVariant: Record<Consultation["status"], "default" | "secondary" | "destructive"> = {
@@ -147,7 +147,8 @@ async function AdminContent({
                     {c.first_name} {c.last_name}
                   </p>
                   <p className="text-sm text-muted-foreground">{c.reason}</p>
-                  <p className="text-sm">{formatDateTime(c.scheduled_at)}</p>
+                  <p className="text-sm">{formatDate(c.scheduled_at)}</p>
+                  <p className="text-sm text-muted-foreground">{formatTime(c.scheduled_at)}</p>
                 </div>
                 <Badge variant={statusVariant[c.status]}>{c.status}</Badge>
               </div>
