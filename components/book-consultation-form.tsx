@@ -7,13 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DateTimePicker } from "@/components/datetime-picker";
 
-export function BookConsultationForm({
-  firstName,
-  lastName,
-}: {
-  firstName: string;
-  lastName: string;
-}) {
+export function BookConsultationForm() {
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [scheduledAt, setScheduledAt] = useState<Date | undefined>(undefined);
@@ -52,9 +46,6 @@ export function BookConsultationForm({
   return (
     <div className="flex-1 w-full flex flex-col gap-8 max-w-md mx-auto">
       <h1 className="font-bold text-2xl">Book a Consultation</h1>
-      <p className="text-sm text-muted-foreground">
-        Booking as {firstName} {lastName}
-      </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
