@@ -6,6 +6,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "vitest run",
     "promote-admin": "node scripts/promote-admin.mjs",
     "seed-dummy-data": "node scripts/seed-dummy-data.mjs"
   },
@@ -40,6 +41,7 @@
     "supabase": "^2.109.1",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }

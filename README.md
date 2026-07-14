@@ -99,9 +99,20 @@ Beyond the design decisions above, a dedicated review pass on the finished imple
 
 Both fixes were verified against the live project: the exploits are now rejected, and every legitimate transition (book, reschedule, cancel, complete, mark incomplete, admin promotion) still works correctly.
 
+## Testing
+
+`npm test` (Vitest) runs 24 tests across the three API routes, targeting the authorization boundaries specifically — the system's main risk surface, since business logic here is simple but who-can-touch-what is not:
+
+- **IDOR protection** (`app/api/consultations/[id]/route.test.ts`): a fetch scoped to someone else's consultation id resolves to "not found," the ownership `.eq()` call is asserted directly (not just the resulting status code), and the update step is proven never to run when the ownership check fails.
+- **RBAC** (`app/api/admin/consultations/route.test.ts`): a non-admin caller gets 403, and — critically — never reaches the database query at all, proving the check short-circuits rather than filtering results after the fact.
+- **Server-derived data, not client-trusted** (`app/api/consultations/route.test.ts`): a request that supplies a spoofed `first_name`/`last_name` in the body is proven to have those values ignored in favor of the caller's own profile.
+- **Status transition rules** (`[id]/route.test.ts`): every accept/reject case from the `enforce_consultation_transition` trigger is mirrored at the API layer — can't complete from non-`booked`, can't complete a future consultation, can't un-cancel, can't reschedule a non-`booked` row or into the past — plus the valid transitions actually succeed.
+
+Route handlers are tested directly (imported and invoked as plain functions) with a hand-written fake of the Supabase query builder (`test/mock-supabase.ts`) rather than a live database, so the suite is fast and needs no credentials to run in CI. This deliberately tests the API layer's own logic in isolation; RLS/trigger correctness at the database layer was verified separately, live, against the real project (see Security above). `.github/workflows/ci.yml` runs type-checking, linting, and this suite on every push.
+
 ## What I'd Do With More Time
 
-There are no automated tests. The highest-value addition would be integration tests around the authorization boundaries specifically — a student attempting to PATCH another student's consultation id, a non-admin hitting `/api/admin/consultations` directly — since authorization, not business logic, is this system's main risk surface. A basic CI workflow (`.github/workflows/ci.yml`) already runs type-checking and linting on every push; it would gain a test job once that suite exists.
+Broaden coverage to the remaining routes (`GET /api/consultations`, auth flows) and add a thin end-to-end layer (e.g. Playwright) driving the actual browser flows — sign up, book, reschedule, cancel — since the current suite verifies the API layer in isolation but not the full stack wired together.
 
 ## Known Accepted Risk
 
@@ -146,3 +157,4 @@ consultations (
 - `lib/supabase/current-user.ts` — single source of truth for "who is calling," used everywhere rather than re-derived ad hoc
 - `supabase/migrations/` — schema, RLS policies, and the two security triggers
 - `scripts/promote-admin.mjs` — one-off admin bootstrapping tool
+- `**/*.test.ts`, `test/mock-supabase.ts` — API route tests and the shared fake Supabase client they run against
