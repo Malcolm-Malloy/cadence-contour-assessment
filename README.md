@@ -36,9 +36,20 @@ npm run dev
 
 A local Docker-based Supabase stack (`npx supabase start`) also works if you'd rather not link a hosted project — the migrations apply automatically the first time it starts.
 
-### Exercising the admin role
+### Test accounts
 
-Every new sign-up defaults to `student`. To test `/admin`, sign up through the app once, then promote that account:
+Two ready-made accounts exist on the hosted project this was built against, so you can log in immediately without signing up:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `reviewer.admin@example.com` | `CadenceReview123!` |
+| Student | `reviewer.student@example.com` | `CadenceReview123!` |
+
+The student account already has one consultation in each status (an upcoming booking, a past-due booking ready to mark complete, an already-completed one, and a cancelled one) so every action — reschedule, cancel, mark complete/incomplete — is immediately exercisable without booking anything first. The admin account has no consultations of its own (admins can't book, by design) but its `/admin` view shows every other student's data, including 30 seeded dummy students.
+
+### Exercising the admin role with your own account
+
+If you'd rather use a fresh account instead of the one above: every new sign-up defaults to `student`. To test `/admin`, sign up through the app once, then promote that account:
 
 ```bash
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key> \
