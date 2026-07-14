@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DateTimePicker } from "@/components/datetime-picker";
+import { formatDate, formatTime } from "@/lib/datetime";
 
 export function BookConsultationForm() {
   const router = useRouter();
@@ -13,6 +15,7 @@ export function BookConsultationForm() {
   const [scheduledAt, setScheduledAt] = useState<Date | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmed, setConfirmed] = useState<{ reason: string; scheduledAt: Date } | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -36,11 +39,39 @@ export function BookConsultationForm() {
         setError(json.error ?? "Something went wrong");
         return;
       }
-      router.push("/dashboard");
       router.refresh();
+      setConfirmed({ reason, scheduledAt });
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (confirmed) {
+    return (
+      <div className="flex-1 w-full flex flex-col gap-6 max-w-md mx-auto text-center items-center">
+        <h1 className="font-bold text-2xl">Consultation booked</h1>
+        <div className="border rounded-lg p-4 w-full text-left">
+          <p className="font-medium">{confirmed.reason}</p>
+          <p className="text-sm">{formatDate(confirmed.scheduledAt)}</p>
+          <p className="text-sm text-muted-foreground">{formatTime(confirmed.scheduledAt)}</p>
+        </div>
+        <div className="flex gap-3">
+          <Button asChild>
+            <Link href="/dashboard">Go to my consultations</Link>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setConfirmed(null);
+              setReason("");
+              setScheduledAt(undefined);
+            }}
+          >
+            Book another
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
