@@ -21,16 +21,21 @@ Every flow has been manually exercised end-to-end against a live hosted Supabase
 
 ## Setup
 
+Fastest path — reuse the project this was built and seeded against, so the test accounts below work immediately:
+
 ```bash
 npm install
-npx supabase login
-npx supabase link --project-ref <your-project-ref>
-npx supabase db push        # applies supabase/migrations/
-cp .env.example .env.local  # fill in URL + anon key
-npm run dev
+cp .env.example .env.local
 ```
 
-Local Docker-based Supabase (`npx supabase start`) also works — migrations apply automatically on first start.
+Fill `.env.local` with:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://gskiaacebqdwnamocxkl.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_RzkpdW7Fk93EDXIvcyWPyg_CWml5n4X
+```
+
+Then `npm run dev`. That anon key is meant to be public — it's client-exposed by design, and RLS is what actually enforces access (see Security below).
 
 **Test accounts** (no sign-up needed):
 
@@ -41,7 +46,17 @@ Local Docker-based Supabase (`npx supabase start`) also works — migrations app
 
 The student account has one consultation in every status already (upcoming, past-due, completed, cancelled), so every action is exercisable immediately. Admin has no consultations of its own (can't book, by design) but sees all 30+ seeded students in `/admin`.
 
-To promote a different account instead: `SUPABASE_SERVICE_ROLE_KEY=... NEXT_PUBLIC_SUPABASE_URL=... npm run promote-admin -- you@example.com` (one-off script, never touches app code).
+**To run against your own separate Supabase project instead** (e.g. to apply the migrations yourself from scratch):
+
+```bash
+npx supabase login
+npx supabase link --project-ref <your-project-ref>
+npx supabase db push        # applies supabase/migrations/
+cp .env.example .env.local  # fill in *your* project's URL + anon key
+npm run dev
+```
+
+Local Docker-based Supabase (`npx supabase start`) also works here — migrations apply automatically on first start. In this case the test accounts above won't exist yet; sign up through the app and promote yourself: `SUPABASE_SERVICE_ROLE_KEY=... NEXT_PUBLIC_SUPABASE_URL=... npm run promote-admin -- you@example.com` (one-off script, never touches app code).
 
 **Env vars:** `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are safe client-side (RLS enforces access). `SUPABASE_SERVICE_ROLE_KEY` is used only by `scripts/promote-admin.mjs` — never in app code, never `NEXT_PUBLIC_`-prefixed.
 
