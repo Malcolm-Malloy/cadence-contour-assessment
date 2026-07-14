@@ -31,16 +31,6 @@
     --radius: 0.5rem;
   }
   .dark {
-    /* Neutral grey elevation scale (base ~#171717, cards ~#212121, raised
-       surfaces ~#2e2e2e), per Material Design's dark theme guidance: avoid
-       pure black so shadows/elevation stay visible. Text is off-white at
-       85% lightness rather than near-white, and primary actions use a
-       single muted teal accent instead of a bright white block -- per
-       dark-mode UX guidance, restricting saturation to one intentional
-       accent color reads calmer than using near-white as the "loud"
-       element. Verified contrast: white text on the accent button is
-       4.60:1 (passes WCAG AA), the accent against the card background is
-       3.50:1 (passes the 3:1 UI-component minimum). */
     --background: 0 0% 9%;
     --foreground: 0 0% 85%;
     --card: 0 0% 13%;

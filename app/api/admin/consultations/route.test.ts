@@ -29,9 +29,6 @@ describe("GET /api/admin/consultations", () => {
     const res = await GET(getRequest());
 
     expect(res.status).toBe(403);
-    // The role check must short-circuit before any query runs -- a student
-    // hitting this route directly (bypassing the UI, which merely hides the
-    // admin nav link) should never reach the database query at all.
     expect(supabase.from).not.toHaveBeenCalled();
   });
 

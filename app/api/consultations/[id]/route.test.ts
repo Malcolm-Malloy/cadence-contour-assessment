@@ -38,9 +38,6 @@ describe("PATCH /api/consultations/:id -- ownership (IDOR)", () => {
   });
 
   it("scopes the ownership check to the caller's own id, and returns 404 for someone else's consultation", async () => {
-    // The fetch-then-validate query is scoped by BOTH id and student_id, so a
-    // row belonging to a different student resolves to "no row found" here
-    // (RLS does the same at the database layer, independently).
     const supabase = makeSupabaseMock([{ data: null, error: { message: "no rows" } }]);
     mockGetCurrentUser.mockResolvedValue(makeAuth({ userId: "student-1", role: "student", supabase }));
 

@@ -13,12 +13,6 @@ type SupabaseQueryBuilder = PromiseLike<{ data: unknown; error: unknown; count?:
   single: () => Promise<{ data: unknown; error: unknown }>;
 };
 
-// A minimal fake of the supabase-js fluent query builder. Each call to
-// `.from()` consumes the next configured result in `results`, so a route
-// that queries twice (e.g. PATCH: fetch-then-update) can be given a
-// different result for each call. `insertFn`/`updateFn`/`eqFn` capture the
-// actual arguments passed, so tests can assert on *what* was sent to the
-// database, not just the HTTP status code that came back.
 export function makeSupabaseMock(results: MockResult[]) {
   let call = 0;
   const insertFn = vi.fn();
