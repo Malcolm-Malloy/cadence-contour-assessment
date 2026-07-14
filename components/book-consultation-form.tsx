@@ -7,10 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DateTimePicker } from "@/components/datetime-picker";
 
-export function BookConsultationForm() {
+export function BookConsultationForm({
+  firstName,
+  lastName,
+}: {
+  firstName: string;
+  lastName: string;
+}) {
   const router = useRouter();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [reason, setReason] = useState("");
   const [scheduledAt, setScheduledAt] = useState<Date | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
@@ -29,8 +33,6 @@ export function BookConsultationForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          first_name: firstName,
-          last_name: lastName,
           reason,
           scheduled_at: scheduledAt.toISOString(),
         }),
@@ -50,28 +52,11 @@ export function BookConsultationForm() {
   return (
     <div className="flex-1 w-full flex flex-col gap-8 max-w-md mx-auto">
       <h1 className="font-bold text-2xl">Book a Consultation</h1>
+      <p className="text-sm text-muted-foreground">
+        Booking as {firstName} {lastName}
+      </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="first_name">First name</Label>
-          <Input
-            id="first_name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="last_name">Last name</Label>
-          <Input
-            id="last_name"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            required
-          />
-        </div>
-
         <div className="flex flex-col gap-2">
           <Label htmlFor="reason">Reason for consultation</Label>
           <Input

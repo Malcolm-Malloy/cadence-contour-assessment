@@ -20,7 +20,12 @@ async function BookConsultationGate() {
     redirect("/admin");
   }
 
-  return <BookConsultationForm />;
+  return (
+    <BookConsultationForm
+      firstName={auth.profile.first_name}
+      lastName={auth.profile.last_name}
+    />
+  );
 }
 
 function BookFallback() {

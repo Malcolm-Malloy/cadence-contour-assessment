@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { supabase, userId } = auth;
+  const { supabase, userId, profile } = auth;
 
   let body: unknown;
   try {
@@ -41,22 +41,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { first_name, last_name, reason, scheduled_at } = (body ?? {}) as Record<
-    string,
-    unknown
-  >;
+  const { reason, scheduled_at } = (body ?? {}) as Record<string, unknown>;
 
   if (
-    typeof first_name !== "string" ||
-    !first_name.trim() ||
-    typeof last_name !== "string" ||
-    !last_name.trim() ||
     typeof reason !== "string" ||
     !reason.trim() ||
     typeof scheduled_at !== "string"
   ) {
     return NextResponse.json(
-      { error: "first_name, last_name, reason, and scheduled_at are required" },
+      { error: "reason and scheduled_at are required" },
       { status: 400 },
     );
   }
@@ -76,8 +69,8 @@ export async function POST(request: Request) {
     .from("consultations")
     .insert({
       student_id: userId,
-      first_name: first_name.trim(),
-      last_name: last_name.trim(),
+      first_name: profile.first_name,
+      last_name: profile.last_name,
       reason: reason.trim(),
       scheduled_at: scheduledDate.toISOString(),
     })
