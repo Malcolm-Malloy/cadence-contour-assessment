@@ -60,12 +60,7 @@ export function ConsultationList({ consultations }: { consultations: Consultatio
         return (
           <div key={c.id} className="border rounded-lg p-4 flex flex-col gap-2">
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div>
-                <p className="font-medium">
-                  {c.first_name} {c.last_name}
-                </p>
-                <p className="text-sm text-muted-foreground">{c.reason}</p>
-              </div>
+              <p className="font-medium">{c.reason}</p>
               <Badge variant={statusVariant[c.status]}>{c.status}</Badge>
             </div>
 
